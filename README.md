@@ -1,8 +1,8 @@
-#OAuth 2 Silex
+# OAuth 2 Silex
 
 This repository contains all the examples shown using Slim framework on PHP League's OAuth2 and show how to do them in Silex.
 
-##Setup
+## Setup
 
 It's very simple:
 
@@ -14,11 +14,11 @@ It's very simple:
 
 Below you will find curl request showing different stuff from the library.
 
-##Grant Types
+## Grant Types
 
-###Auth Code Grant
+### Auth Code Grant
 
-####Authorise
+#### Authorise
 
 The following call will give the Authorisation Code
 
@@ -26,7 +26,7 @@ The following call will give the Authorisation Code
       --url 'http://www.oauth-2-silex.test/auth_code.php/authorize?response_type=code&client_id=myawesomeapp&scope=basic%20email&state=randomcsrftoken&redirect_uri=http%3A%2F%2Fwww.oauth-2-silex.test%2Fauth_code.php%2Fredirect_uri' \
       --header 'accept: 1.0'
       
-####Access token
+#### Access token
 
     curl --request POST \
       --url http://www.oauth-2-silex.test/auth_code.php/access_token \
@@ -34,9 +34,9 @@ The following call will give the Authorisation Code
       --header 'content-type: application/x-www-form-urlencoded' \
       --data 'grant_type=authorization_code&client_id=myawesomeapp&client_secret=abc123&code=<Auth Code>&redirect_uri=http%3A%2F%2Fwww.oauth-2-silex.test%2Fauth_code.php%2Fredirect_uri'
 
-###Client Credentials Grant
+### Client Credentials Grant
 
-####Access token      
+#### Access token      
 
     curl --request POST \
       --url http://www.oauth-2-silex.test/client_credentials.php/access_token \
@@ -44,9 +44,9 @@ The following call will give the Authorisation Code
       --header 'content-type: application/x-www-form-urlencoded' \
       --data 'grant_type=client_credentials&client_id=myawesomeapp&client_secret=abc123&scope=basic%20email'
       
-###Password Grant
+### Password Grant
 
-####Acces token
+#### Access token
 
     curl --request POST \
       --url http://www.oauth-2-silex.test/password.php/access_token \
@@ -54,7 +54,7 @@ The following call will give the Authorisation Code
       --header 'content-type: application/x-www-form-urlencoded' \
       --data 'grant_type=password&client_id=myawesomeapp&client_secret=abc123&username=alex&password=whisky&scope=basic%20email'
       
-###Refresh Token Grant
+### Refresh Token Grant
 
 _(Note: Replace the place holder "<Refresh Token>" with the refresh token)_
 
@@ -65,9 +65,9 @@ _(Note: Replace the place holder "<Refresh Token>" with the refresh token)_
       --data 'grant_type=refresh_token&client_id=myawesomeapp&client_secret=abc123&refresh_token=<Refresh Token>'
 
 
-##Other Examples
+## Other Examples
 
-###API
+### API
 
 The following lists the users. _(Note: Replace the place holder "<Access Token>" with the access token)_
 
@@ -76,11 +76,11 @@ The following lists the users. _(Note: Replace the place holder "<Access Token>"
       --header 'accept: 1.0' \
       --header 'authorization: Bearer <Access Token>'
       
-###Middleware
+### Middleware
 
 This example shows how to use OAuth2 middleware to serve requests.
 
-####Access Token
+#### Access Token
 
 The following call with give the access token using the middleware provided in the OAuth2 Library _(Note: Replace the place holder "<Auth Code>" with the authorisation code)_
 
@@ -90,7 +90,7 @@ The following call with give the access token using the middleware provided in t
       --header 'content-type: application/x-www-form-urlencoded' \
       --data 'grant_type=authorization_code&client_id=myawesomeapp&client_secret=abc123&code=<Auth Code>&redirect_uri=http%3A%2F%2Fwww.oauth-2-silex.test%2Fauth_code.php%2Fredirect_uri'
       
-####User Details
+#### User Details
 
 The following call will give the user detail of the verifying user detail. _(Note: Replace the place holder "<Access Token>" with the access token)_
 
