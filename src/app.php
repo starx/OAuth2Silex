@@ -15,8 +15,10 @@ use League\OAuth2\Server\ResourceServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
+use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use League\OAuth2\Server\Middleware\ResourceServerMiddleware;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -84,6 +86,13 @@ $app['authorization.server'] = function() use ($app) {
         $grant,
         new \DateInterval('PT1H') // access tokens will expire after 1 hour
     );
+
+    /*
+     * Enable the implicit grant on the server
+     */
+
+    // Enable the implicit grant on the server with a token TTL of 1 hour
+    $server->enableGrantType(new ImplicitGrant(new \DateInterval('PT1H')));
 
     /*
      * Enable the refresh token grant on the server
@@ -303,16 +312,18 @@ $apiApp->get('/users', function (\Symfony\Component\HttpFoundation\Request $requ
         ],
     ];
 
+    $totalUsers = count($users);
+
     // If the access token doesn't have the `basic` scope hide users' names
     if (in_array('basic', $psr7Request->getAttribute('oauth_scopes', [])) === false) {
-        for ($i = 0; $i < count($users); $i++) {
+        for ($i = 0; $i < $totalUsers; $i++) {
             unset($users[$i]['name']);
         }
     }
 
     // If the access token doesn't have the `email` scope hide users' email addresses
     if (in_array('email', $psr7Request->getAttribute('oauth_scopes', [])) === false) {
-        for ($i = 0; $i < count($users); $i++) {
+        for ($i = 0; $i < $totalUsers; $i++) {
             unset($users[$i]['email']);
         }
     }
