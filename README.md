@@ -56,7 +56,7 @@ The following call will give the Authorisation Code
       
 ### Refresh Token Grant
 
-_(Note: Replace the place holder "<Refresh Token>" with the refresh token)_
+_(Note: Replace the place holder "\<Refresh Token\>" with the refresh token)_
 
     curl --request POST \
       --url 'http://www.oauth2-silex.test/refresh_token.php/access_token?=' \
@@ -69,9 +69,9 @@ _(Note: Replace the place holder "<Refresh Token>" with the refresh token)_
 
 ### API
 
-The following lists the users. _(Note: Replace the place holder "<Access Token>" with the access token)_
+The following lists the users. _(Note: Replace the place holder "\<Access Token\>" with the access token)_
 
-    curl --request GET \
+    curl --request GET \n
       --url http://www.oauth2-silex.test/api.php/users \
       --header 'accept: 1.0' \
       --header 'authorization: Bearer <Access Token>'
@@ -82,7 +82,7 @@ This example shows how to use OAuth2 middleware to serve requests.
 
 #### Access Token
 
-The following call with give the access token using the middleware provided in the OAuth2 Library _(Note: Replace the place holder "<Auth Code>" with the authorisation code)_
+The following call with give the access token using the middleware provided in the OAuth2 Library _(Note: Replace the place holder "\<Auth Code\>" with the authorisation code)_
 
     curl --request POST \
       --url http://www.oauth2-silex.test/middleware_use.php/access_token \
@@ -92,7 +92,7 @@ The following call with give the access token using the middleware provided in t
       
 #### User Details
 
-The following call will give the user detail of the verifying user detail. _(Note: Replace the place holder "<Access Token>" with the access token)_
+The following call will give the user detail of the verifying user detail. _(Note: Replace the place holder "\<Access Token\>" with the access token)_
 
     curl --request GET \
       --url http://www.oauth2-silex.test/middleware_use.php/api/user \
