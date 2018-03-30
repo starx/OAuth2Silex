@@ -23,7 +23,7 @@ class ClientRepository implements ClientRepositoryInterface
             'myawesomeapp' => [
                 'secret'          => password_hash('abc123', PASSWORD_BCRYPT),
                 'name'            => 'My Awesome App',
-                'redirect_uri'    => 'http://www.bcis-isp-api.test/redirect_uri',
+                'redirect_uri'    => 'http://www.oauth2-silex.test/redirect_uri',
                 'is_confidential' => true,
             ],
         ];
