@@ -23,7 +23,7 @@ Below you will find curl request showing different stuff from the library.
 The following call will give the Authorisation Code
 
     curl --request GET \
-      --url 'http://www.oauth2-silex.test/auth_code.php/authorize?response_type=code&client_id=myawesomeapp&scope=basic%20email&state=randomcsrftoken&redirect_uri=http%3A%2F%2Fwww.oauth-2-silex.test%2Fauth_code.php%2Fredirect_uri' \
+      --url 'http://www.oauth2-silex.test/auth_code.php/authorize?response_type=code&client_id=myawesomeapp&scope=basic%20email&state=randomcsrftoken&redirect_uri=http%3A%2F%2Fwww.oauth2-silex.test%2Fauth_code.php%2Fredirect_uri' \
       --header 'accept: 1.0'
       
 #### Access token
