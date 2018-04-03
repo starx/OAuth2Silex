@@ -4,6 +4,24 @@ use Symfony\Component\HttpFoundation\Response;
 
 $app = new \Silex\Application(['debug' => true]);
 $app->register(new \Silex\Provider\ServiceControllerServiceProvider());
+/*
+ * Provides Session
+ */
+$app->register(new \Silex\Provider\SessionServiceProvider());
+/*
+ * Provides Routing and also URL Generator
+ */
+$app->register(new \Silex\Provider\RoutingServiceProvider());
+/*
+ * Provides form services
+ */
+$app->register(new \Silex\Provider\FormServiceProvider());
+/*
+ * Provides Twig Templating
+ */
+$app->register(new Silex\Provider\TwigServiceProvider(), array(
+    'twig.path' => __DIR__.'/views',
+));
 
 $oauth2AuthProvider = new \OAuth2ServerExamples\Providers\OAuth2AuthProvider();
 $app->register($oauth2AuthProvider);
