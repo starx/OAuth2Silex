@@ -29,10 +29,38 @@ class OAuth2AuthProvider implements ControllerProviderInterface, ServiceProvider
         $controllersFactory = $app['controllers_factory'];
         $controllersFactory
             ->get(
+                '/',
+                'controller.oauth2.auth:authorizationRequestAction'
+            )
+            ->bind('oauth2.auth.request');
+
+        $controllersFactory
+            ->get(
+                '/sign-in',
+                'controller.oauth2.auth:signInAction'
+            )
+            ->bind('oauth2.auth.sign_in');
+
+        $controllersFactory
+            ->post(
+                '/sign-in',
+                'controller.oauth2.auth:signInAction'
+            )
+            ->bind('oauth2.auth.sign_in_post');
+
+        $controllersFactory
+            ->get(
                 '/authorize',
                 'controller.oauth2.auth:authorizeAction'
             )
-            ->bind('oauth2.auth.authorise');
+            ->bind('oauth2.auth.authorize');
+
+        $controllersFactory
+            ->post(
+                '/authorize',
+                'controller.oauth2.auth:authorizeAction'
+            )
+            ->bind('oauth2.auth.authorize_post');
 
         $controllersFactory
             ->post(
