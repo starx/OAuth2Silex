@@ -167,7 +167,8 @@ class AuthorisationController extends AbstractController
         }
 
         // Process the sign-in form submission
-        $form = $this->formFactory()->create(new SignInFormType(), []);
+        $formBuilder = $this->formFactory()->createBuilder(SignInFormType::class, []);
+        $form = $formBuilder->getForm();
         try {
             if (
                 $request->getMethod() == Request::METHOD_POST &&
@@ -208,7 +209,7 @@ class AuthorisationController extends AbstractController
         }
 
         // Get the user's ID from their session
-        $params['user_id'] = $session['user_id'];
+        $params['user_id'] = $session->get('user_id');
 
         // User is signed in
         if ($params['user_id'] !== null) {
@@ -220,7 +221,7 @@ class AuthorisationController extends AbstractController
 
         // User is not signed in, show the sign-in form
         else {
-            return $this->twig()->render("base.twig", [
+            return $this->twig()->render("OAuth2/sign_in.twig", [
                 'form' => $form->createView()
             ]);
         }
