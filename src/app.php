@@ -20,7 +20,7 @@ $app->register(new \Silex\Provider\FormServiceProvider());
  * Provides Twig Templating
  */
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path' => __DIR__.'/views',
+    'twig.path' => __DIR__.'/Views',
 ));
 
 $oauth2AuthProvider = new \OAuth2ServerExamples\Providers\OAuth2AuthProvider();
