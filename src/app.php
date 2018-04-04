@@ -22,6 +22,14 @@ $app->register(new \Silex\Provider\FormServiceProvider());
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => __DIR__.'/Views',
 ));
+/*
+ * Provider translation services
+ */
+$app->register(new Silex\Provider\LocaleServiceProvider());
+$app->register(new Silex\Provider\TranslationServiceProvider(), array(
+    'locale_fallbacks' => array('en'),
+    'translator.messages' => array(),
+));
 
 $oauth2AuthProvider = new \OAuth2ServerExamples\Providers\OAuth2AuthProvider();
 $app->register($oauth2AuthProvider);

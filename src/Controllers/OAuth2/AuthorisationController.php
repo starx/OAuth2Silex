@@ -4,9 +4,11 @@ namespace OAuth2ServerExamples\Controllers\OAuth2;
 
 
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use OAuth2ServerExamples\Controllers\AbstractController;
 use OAuth2ServerExamples\Entities\UserEntity;
+use OAuth2ServerExamples\Forms\OAuth2\AuthorizeClientFormType;
 use OAuth2ServerExamples\Forms\OAuth2\SignInFormType;
 use OAuth2ServerExamples\Repositories\ClientRepository;
 use OAuth2ServerExamples\Repositories\UserRepository;
@@ -98,11 +100,11 @@ class AuthorisationController extends AbstractController
 
             /** @var Session $session */
             $session = $app['session'];
-            $session->set('client_id', $psr7Request->getAttribute('client_id'));
-            $session->set('client_details', $psr7Request->getAttribute('client_details'));
-            $session->set('redirect_uri', $psr7Request->getAttribute('redirect_uri'));
-            $session->set('response_type', $psr7Request->getAttribute('response_type'));
-            $session->set('scopes', $psr7Request->getAttribute('scopes'));
+            $session->set('client_id', $request->get('client_id'));
+            $session->set('client_details', $request->get('client_details'));
+            $session->set('redirect_uri', $request->get('redirect_uri'));
+            $session->set('response_type', $request->get('response_type'));
+            $session->set('scopes', $request->get('scopes'));
 
             /** @var UrlGenerator $urlGenerator */
             $urlGenerator = $app['url_generator'];
@@ -127,25 +129,6 @@ class AuthorisationController extends AbstractController
         return $httpFoundationFactory->createResponse($psr7Response);
     }
 
-    private function getSignInForm($formData) {
-        $app = $this->getApp();
-        /** @var FormFactory $formFactory */
-        $formFactory = $app['form.factory'];
-
-        /*
-         * Build form
-         */
-        $form = $formFactory->createBuilder(FormType::class, $formData)
-            ->add('username')
-            ->add('password', PasswordType::class)
-            ->add('submit', SubmitType::class, [
-                'label' => 'Sign in',
-            ])
-            ->getForm();
-
-        return $form;
-    }
-
     public function signInAction(Request $request) {
         $app = $this->getApp();
         /** @var Session $session */
@@ -168,40 +151,138 @@ class AuthorisationController extends AbstractController
 
         // Process the sign-in form submission
         $formBuilder = $this->formFactory()->createBuilder(SignInFormType::class, []);
+        $formBuilder->setMethod('POST');
+
         $form = $formBuilder->getForm();
+
         try {
-            if (
-                $request->getMethod() == Request::METHOD_POST &&
-                $form->isValid()
-            ) {
-                $data = $form->getData();
+            if ( $request->getMethod() == Request::METHOD_POST ) {
+                $form->handleRequest($request);
+                if( $form->isValid() ) {
+                    $data = $form->getData();
 
-                // Get username
-                $u = $data['username'];
-                if ($u === null || trim($u) === '') {
-                    throw new \Exception('Please enter your username.');
+                    // Get username
+                    $u = $data['username'];
+                    if ($u === null || trim($u) === '') {
+                        throw new \Exception('Please enter your username.');
+                    }
+
+                    // Get password
+                    $p = $data['password'];
+                    if ($p === null || trim($p) === '') {
+                        throw new \Exception('Please enter your password.');
+                    }
+
+                    // Verify the user's username and password
+                    $grantType = 'authorization_code';
+
+                    $clientRepository = new ClientRepository();
+                    $clientEntity = $clientRepository->getClientEntity($params['client_id'], $grantType, null, false);
+
+                    if(!$clientEntity instanceof ClientEntityInterface) {
+                        throw new \Exception('Client could not be identified');
+                    }
+
+
+                    $userRepository = new UserRepository();
+                    $userEntity = $userRepository
+                        ->getUserEntityByUserCredentials($u, $p, $grantType, $clientEntity);
+
+                    // If the entity was found
+                    if ($userEntity instanceof UserEntity) {
+                        // Set the user's ID to a session
+                        $session->set('user_id', $userEntity->getIdentifier());
+                    }
                 }
+            }
+        } catch(\Exception $e) {
+            $params['error_message'] = $e->getMessage();
+        }
 
-                // Get password
-                $p = $data['password'];
-                if ($p === null || trim($p) === '') {
-                    throw new \Exception('Please enter your password.');
-                }
+        // Get the user's ID from their session
+        $params['user_id'] = $session->get('user_id');
 
-                // Verify the user's username and password
-                $grantType = 'authorization_code';
+        // User is signed in
+        if ($params['user_id'] !== null) {
+            // Redirect the user to authorise route
+            /** @var UrlGenerator $urlGenerator */
+            $urlGenerator = $app['url_generator'];
+            return new RedirectResponse($urlGenerator->generate('oauth2.auth.authorize'));
+        }
 
-                $clientRepository = new ClientRepository();
-                $clientEntity = $clientRepository->getClientEntity($params['client_id'], $grantType);
+        // User is not signed in, show the sign-in form
+        else {
+            return $this->twig()->render("OAuth2/sign_in.twig", [
+                'form' => $form->createView()
+            ]);
+        }
+    }
 
-                $userRepository = new UserRepository();
-                $userEntity = $userRepository
-                    ->getUserEntityByUserCredentials($u, $p, $grantType, $clientEntity);
+    public function authorizeAction(Request $request) {
+        $app = $this->getApp();
+        /** @var Session $session */
+        $session = $app['session'];
 
-                // If the entity was found
-                if ($userEntity instanceof UserEntity) {
-                    // Set the user's ID to a session
-                    $session->set('user_id', $userEntity->getIdentifier());
+        // Retrieve the auth params from the user's session
+        $params['client_id'] = $session->get('client_id');
+        $params['client_details'] = $session->get('client_details');
+        $params['redirect_uri'] = $session->get('redirect_uri');
+        $params['response_type'] = $session->get('response_type');
+        $params['scopes'] = $session->get('scopes');
+        $params['user_id'] = $session->get('user_id');
+
+        // Check that the auth params are all present
+        foreach ($params as $key=>$value) {
+            if ($value === null) {
+                // Throw an error because an auth param is missing - don't
+                //  continue any further
+            }
+        }
+
+        // Process the sign-in form submission
+        $formBuilder = $this->formFactory()->createBuilder(AuthorizeClientFormType::class, []);
+        $formBuilder->setMethod('POST');
+
+        $form = $formBuilder->getForm();
+
+        try {
+            if ( $request->getMethod() == Request::METHOD_POST ) {
+                $form->handleRequest($request);
+                if( $form->isValid() ) {
+                    $data = $form->getData();
+
+                    // Get username
+                    $u = $data['authorize'];
+
+                    // Verify the user's username and password
+                    $grantType = 'authorization_code';
+
+                    $clientRepository = new ClientRepository();
+                    $clientEntity = $clientRepository->getClientEntity($params['client_id'], $grantType, null, false);
+
+                    if(!$clientEntity instanceof ClientEntityInterface) {
+                        throw new \Exception('Client could not be identified');
+                    }
+
+
+                    $userRepository = new UserRepository();
+
+                    $userEntity = $userRepository->getUserByIdentity($params['user_id']);
+                    // Once the user has logged in set the user on the AuthorizationRequest
+                    $authRequest->setUser(new UserEntity());
+
+                    // Once the user has approved or denied the client update the status
+                    // (true = approved, false = denied)
+                    $authRequest->setAuthorizationApproved(true);
+
+                    // Return the HTTP redirect response
+                    $psr7Response = $server->completeAuthorizationRequest($authRequest, $psr7Response);
+
+                    // If the entity was found
+                    if ($userEntity instanceof UserEntity) {
+                        // Set the user's ID to a session
+                        $session->set('user_id', $userEntity->getIdentifier());
+                    }
                 }
             }
         } catch(\Exception $e) {
