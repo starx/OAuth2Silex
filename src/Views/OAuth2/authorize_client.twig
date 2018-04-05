@@ -1,5 +1,8 @@
 <html>
 <body>
+{% if data.params.error_message is defined %}
+    {{ data.params.error_message }}
+{% endif %}
 {{ form(form) }}
 </body>
 </html>
