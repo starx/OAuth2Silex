@@ -28,64 +28,14 @@ use Zend\Diactoros\Stream;
 
 class AuthorizationController extends AbstractController
 {
-    public function referenceAuthorizationRequestAction(Request $request)
-    {
-        $app = $this->getApp();
-
-        /* @var AuthorizationServer $server */
-        $server = $app['authorization.server'];
-        /*
-         * Factory class to convert Symfony Request to PSR7 complaint Request
-         */
-        $diactorosFactory = new DiactorosFactory();
-
-        // Create the request using GLOBALS and convert
-        $psr7Request = $diactorosFactory->createRequest($request);
-
-        // Response
-        $psr7Response = $diactorosFactory->createResponse(new Response());
-
-        try {
-            // Validate the HTTP request and return an AuthorizationRequest object.
-            // The auth request object can be serialized into a user's session
-            $authRequest = $server->validateAuthorizationRequest($psr7Request);
-
-            // Once the user has logged in set the user on the AuthorizationRequest
-            $authRequest->setUser(new UserEntity());
-
-            // Once the user has approved or denied the client update the status
-            // (true = approved, false = denied)
-            $authRequest->setAuthorizationApproved(true);
-
-            // Return the HTTP redirect response
-            $psr7Response = $server->completeAuthorizationRequest($authRequest, $psr7Response);
-        } catch (OAuthServerException $exception) {
-            $psr7Response = $exception->generateHttpResponse($psr7Response);
-        } catch (\Exception $exception) {
-            $body = new Stream('php://temp', 'r+');
-            $body->write($exception->getMessage());
-
-            $psr7Response = $psr7Response->withStatus(500)->withBody($body);
-        }
-
-        /*
-         * Factory class to convert PSR7 complaint response to Symfony response
-         */
-        $httpFoundationFactory = new HttpFoundationFactory();
-
-        // Return the Symfony response
-        return $httpFoundationFactory->createResponse($psr7Response);
-    }
-
     public function authorizationRequestAction(Request $request)
     {
         $app = $this->getApp();
 
         /* @var AuthorizationServer $server */
         $server = $app['authorization.server'];
-        /*
-         * Factory class to convert Symfony Request to PSR7 complaint Request
-         */
+
+        // Factory class to convert Symfony Request to PSR7 complaint Request
         $diactorosFactory = new DiactorosFactory();
 
         // Create the request using GLOBALS and convert
@@ -122,9 +72,7 @@ class AuthorizationController extends AbstractController
             $psr7Response = $psr7Response->withStatus(500)->withBody($body);
         }
 
-        /*
-         * Factory class to convert PSR7 complaint response to Symfony response
-         */
+        // Factory class to convert PSR7 complaint response to Symfony response
         $httpFoundationFactory = new HttpFoundationFactory();
 
         // Return the Symfony response
@@ -226,11 +174,9 @@ class AuthorizationController extends AbstractController
         }
 
         // User is not signed in, show the sign-in form
-        else {
-            return $this->twig()->render("OAuth2/sign_in.twig", [
-                'form' => $form->createView()
-            ]);
-        }
+        return $this->twig()->render("OAuth2/sign_in.twig", [
+            'form' => $form->createView()
+        ]);
     }
 
     public function authorizeAction(Request $request)
@@ -337,16 +283,13 @@ class AuthorizationController extends AbstractController
 
     }
 
-
     public function accessTokenAction() {
         $app = $this->getApp();
 
         /* @var AuthorizationServer $server */
         $server = $app['authorization.server'];
 
-        /*
-         * Factory class to convert Symfony Request to PSR7 complaint Request
-         */
+        // Factory class to convert Symfony Request to PSR7 complaint Request
         $diactorosFactory = new DiactorosFactory();
 
         // Create the request using GLOBALS and convert
@@ -371,9 +314,7 @@ class AuthorizationController extends AbstractController
             $psr7Response = $psr7Response->withStatus(500)->withBody($body);
         }
 
-        /*
-         * Factory class to convert PSR7 complaint response to Symfony response
-         */
+        // Factory class to convert PSR7 complaint response to Symfony response
         $httpFoundationFactory = new HttpFoundationFactory();
 
         // Return the Symfony response
