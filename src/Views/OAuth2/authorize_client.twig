@@ -1,0 +1,19 @@
+<html>
+<body>
+{# Show the error message if there is #}
+{% if data.params.error_message is defined %}
+    {{ data.params.error_message }}
+{% endif %}
+
+{# Show the authorization form #}
+{{ form_start(form) }}
+    {# Show the authorization message #}
+    <p>
+        Application "{{ data.params.client_id }}" wants to access your details.
+        Do you want to authorize this action?
+    </p>
+    {{ form_widget(form.authorize) }}
+    {{ form(form) }}
+{{ form_end(form) }}
+</body>
+</html>

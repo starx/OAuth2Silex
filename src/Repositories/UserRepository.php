@@ -30,4 +30,12 @@ class UserRepository implements UserRepositoryInterface
 
         return;
     }
+
+    public function getUserByIdentity($identity) {
+        if ($identity == 1) {
+            return new UserEntity();
+        }
+
+        return;
+    }
 }
