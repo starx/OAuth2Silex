@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Zend\Diactoros\Stream;
 
-class AuthorisationController extends AbstractController
+class AuthorizationController extends AbstractController
 {
     public function referenceAuthorizationRequestAction(Request $request)
     {

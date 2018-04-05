@@ -8,7 +8,7 @@ use League\OAuth2\Server\Grant\ImplicitGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use League\OAuth2\Server\ResourceServer;
-use OAuth2ServerExamples\Controllers\OAuth2\AuthorisationController;
+use OAuth2ServerExamples\Controllers\OAuth2\AuthorizationController;
 use OAuth2ServerExamples\Repositories\AccessTokenRepository;
 use OAuth2ServerExamples\Repositories\AuthCodeRepository;
 use OAuth2ServerExamples\Repositories\ClientRepository;
@@ -163,7 +163,7 @@ class OAuth2AuthProvider implements ControllerProviderInterface, ServiceProvider
         };
 
         $app['controller.oauth2.auth'] = function() use ($app) {
-            $controller = new AuthorisationController($app);
+            $controller = new AuthorizationController($app);
 
             return $controller;
         };
