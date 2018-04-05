@@ -18,13 +18,20 @@ Below you will find curl request showing different stuff from the library.
 
 ### Auth Code Grant
 
-#### Authorise
+#### Authorization code
 
-The following call will give the Authorisation Code
+To receive the authorization code, the following work flow should be followed.
 
-    curl --request GET \
-      --url 'http://www.oauth2-silex.test/auth/authorize?response_type=code&client_id=myawesomeapp&scope=basic%20email&state=randomcsrftoken&redirect_uri=http%3A%2F%2Fwww.oauth2-silex.test%2Fauth_code.php%2Fredirect_uri' \
-      --header 'accept: 1.0'
+1. Make a request to `http://www.oauth2-silex.test/auth` with all the required parameters.
+
+    e.g `http://www.oauth2-silex.test/auth?response_type=code&client_id=myawesomeapp&scope=basic&state=randomcsrftoken&redirect_uri=http%3A%2F%2Fwww.oauth2-silex.test%2Fredirect_uri`
+    
+2. If the provider parameters are correct, the system will redirect to a page, where it will ask the user to sign in.
+
+    The test credentials are: Username: `alex`, Password: `whisky`
+    
+3. If the credentials are correct, the system will redirect to a page, where it will ask the user, if he wants to authorize the client to access the selected scopes.
+4. If authorized, the system will now generate the authorization code and redirect to the redirect URL specified.
       
 #### Access token
 
@@ -32,7 +39,7 @@ The following call will give the Authorisation Code
       --url http://www.oauth2-silex.test/auth/access_token \
       --header 'accept: 1.0' \
       --header 'content-type: application/x-www-form-urlencoded' \
-      --data 'grant_type=authorization_code&client_id=myawesomeapp&client_secret=abc123&code=<Auth Code>&redirect_uri=http%3A%2F%2Fwww.oauth2-silex.test%2Fauth_code.php%2Fredirect_uri'
+      --data 'grant_type=authorization_code&client_id=myawesomeapp&client_secret=abc123&code=<Auth Code>&redirect_uri=http%3A%2F%2Fwww.oauth2-silex.test%2Fredirect_uri'
 
 ### Client Credentials Grant
 
