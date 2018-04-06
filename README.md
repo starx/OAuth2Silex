@@ -30,7 +30,7 @@ To receive the authorization code, the following work flow should be followed.
 
     The test credentials are: Username: `alex`, Password: `whisky`
     
-3. If the credentials are correct, the system will redirect to a page, where it will ask the user, if he wants to authorize the client to access the selected scopes.
+3. If the credentials are correct, the system will redirect to a page, where it will ask the user, if he wants to authorize the client to access the selected scopes, unless `auto_approval` parameter is set to `1` in the `client_details` parameter of authorization request in step 1.
 4. If authorized, the system will now generate the authorization code and redirect to the redirect URL specified.
       
 #### Access token
