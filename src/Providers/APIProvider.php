@@ -2,7 +2,6 @@
 
 namespace OAuth2ServerExamples\Providers;
 
-
 use OAuth2ServerExamples\Controllers\API\UsersController;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
