@@ -6,14 +6,10 @@
  *
  * @link        https://github.com/starx/OAuth2Silex
  */
-
-date_default_timezone_set('UTC');
-use Symfony\Component\Debug\Debug;
-
+ini_set('display_errors', 0);
 require_once __DIR__.'/../vendor/autoload.php';
-Debug::enable();
-/** @var \Silex\Application $app */
-$app = require __DIR__.'/../src/app.php';
 
-
+$app = new \Silex\Application();
+require __DIR__.'/../config/prod.php';
+require __DIR__ . '/../src/Application/app.php';
 $app->run();
