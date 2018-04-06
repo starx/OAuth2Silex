@@ -6,6 +6,7 @@
  *
  * @link        https://github.com/starx/OAuth2Silex
  */
+
 namespace OAuth2ServerExamples\Controllers\OAuth2;
 
 
@@ -106,7 +107,8 @@ class AuthorizationController extends AbstractController
      * @throws \Twig_Error_Runtime
      * @throws \Twig_Error_Syntax
      */
-    public function signInAction(Request $request) {
+    public function signInAction(Request $request)
+    {
         $app = $this->getApp();
         /** @var Session $session */
         $session = $app['session'];
@@ -118,6 +120,7 @@ class AuthorizationController extends AbstractController
         $params['response_type'] = $session->get('response_type');
         $params['scope'] = $session->get('scope');
 
+        // Validate the params
         try {
             // Check that the auth params are all present
             foreach ($params as $key => $value) {
@@ -140,9 +143,9 @@ class AuthorizationController extends AbstractController
         $form = $formBuilder->getForm();
 
         try {
-            if ( $request->getMethod() == Request::METHOD_POST ) {
+            if ($request->getMethod() == Request::METHOD_POST) {
                 $form->handleRequest($request);
-                if( $form->isValid() ) {
+                if ($form->isValid()) {
                     $data = $form->getData();
 
                     // Get username
@@ -167,7 +170,7 @@ class AuthorizationController extends AbstractController
 
                     $clientEntity = $clientRepository->getClientEntity($params['client_id'], $grantType, null, false);
 
-                    if(!$clientEntity instanceof ClientEntityInterface) {
+                    if (!$clientEntity instanceof ClientEntityInterface) {
                         throw new \Exception('Client could not be identified');
                     }
 
@@ -193,7 +196,7 @@ class AuthorizationController extends AbstractController
                     }
                 }
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $params['error_message'] = $e->getMessage();
         }
 
@@ -242,6 +245,7 @@ class AuthorizationController extends AbstractController
         $params['response_type'] = $session->get('response_type');
         $params['scope'] = $session->get('scope');
 
+        // Validate the params
         try {
             // Check that the auth params are all present
             foreach ($params as $key => $value) {
@@ -269,19 +273,24 @@ class AuthorizationController extends AbstractController
             return new RedirectResponse($urlGenerator->generate('oauth2.auth.sign_in'));
         }
 
+        // Flag to mark approval of authorization
+        $authorizationApproved = false;
+
         // Check if the client should be automatically approved
         $autoApprove = ($params['client_details']['auto_approve'] === '1') ? true : false;
 
-        // Process the sign-in form submission
-        $formBuilder = $this->formFactory()->createBuilder(AuthorizeClientFormType::class, []);
-        $formBuilder->setMethod('POST');
-        $form = $formBuilder->getForm();
+        // If not set for auto approval, show/process the approval form
+        if ($autoApprove !== true) {
+            // Process the sign-in form submission
+            $formBuilder = $this->formFactory()->createBuilder(AuthorizeClientFormType::class, []);
+            $formBuilder->setMethod('POST');
+            $form = $formBuilder->getForm();
 
-        // Handle the form's post
-        if ($request->getMethod() == Request::METHOD_POST) {
-            // Set the authorized flag as false by default
-            $clientAuthorized = false;
-            try {
+            // Handle the form's post
+            if ($request->getMethod() == Request::METHOD_POST) {
+                // Set the authorized flag as false by default
+                $clientAuthorized = false;
+
                 $form->handleRequest($request);
                 if ($form->isValid()) {
                     $data = $form->getData();
@@ -290,57 +299,67 @@ class AuthorizationController extends AbstractController
                     $clientAuthorized = $data['authorize'];
                 }
 
-                $authorizationApproved = $clientAuthorized === true || $autoApprove === true;
+                $authorizationApproved = $clientAuthorized === true;
 
-                // Get the authorization request object from the session
-                /** @var AuthorizationRequest $authRequest */
-                $authRequest = $session->get('auth_request');
+            } else {
+                // User has not approved the client
+                // show the authorize client form
 
-                // Update the AuthorizationRequest with the status
-                // (true = approved, false = denied)
-                $authRequest->setAuthorizationApproved($authorizationApproved);
-
-                /*
-                 * Complete the authorization process
-                 */
-
-                // Get the authorization server
-                /** @var AuthorizationServer $server */
-                $server = $app['authorization.server'];
-
-                // Factory class to convert Symfony Request to PSR7 complaint Request
-                $diactorosFactory = new DiactorosFactory();
-
-                // Get the HTTP redirect response
-                $psr7Response = $server->completeAuthorizationRequest(
-                    $authRequest,
-                    $diactorosFactory->createResponse(new Response())
-                );
-
-                // Factory class to convert PSR7 complaint response to Symfony response
-                $httpFoundationFactory = new HttpFoundationFactory();
-
-                // Invalidate the session
-                $session->invalidate();
-
-                // Return the Symfony response
-                return $httpFoundationFactory->createResponse($psr7Response);
-
-            } catch (\Exception $e) {
-                $params['error_message'] = $e->getMessage();
+                return $this->twig()->render("OAuth2/authorize_client.twig", [
+                    'form' => $form->createView(),
+                    'data' => [
+                        'params' => $params
+                    ]
+                ]);
             }
+        } else {
+            // Since selected for auto approval, change the flag to true
+            $authorizationApproved = true;
         }
 
-        // User has not approved the client, or there is an error
-        // show the authorize client form
+        /*
+         * Final approval stage, process the authorization details and respond
+         */
+        try {
+            // Get the authorization request object from the session
+            /** @var AuthorizationRequest $authRequest */
+            $authRequest = $session->get('auth_request');
 
-        return $this->twig()->render("OAuth2/authorize_client.twig", [
-            'form' => $form->createView(),
-            'data' => [
-                'params' => $params
-            ]
-        ]);
+            // Update the AuthorizationRequest with the status
+            // (true = approved, false = denied)
+            $authRequest->setAuthorizationApproved($authorizationApproved);
 
+            /*
+             * Complete the authorization process
+             */
+
+            // Get the authorization server
+            /** @var AuthorizationServer $server */
+            $server = $app['authorization.server'];
+
+            // Factory class to convert Symfony Request to PSR7 complaint Request
+            $diactorosFactory = new DiactorosFactory();
+
+            // Get the HTTP redirect response
+            $psr7Response = $server->completeAuthorizationRequest(
+                $authRequest,
+                $diactorosFactory->createResponse(new Response())
+            );
+
+            // Factory class to convert PSR7 complaint response to Symfony response
+            $httpFoundationFactory = new HttpFoundationFactory();
+
+            // Invalidate the session
+            $session->invalidate();
+
+            // Return the Symfony response
+            return $httpFoundationFactory->createResponse($psr7Response);
+
+        } catch (\Exception $e) {
+            $body = new Stream('php://temp', 'r+');
+            $body->write($e->getMessage());
+            return new Response($body, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -348,7 +367,8 @@ class AuthorizationController extends AbstractController
      *
      * @return Response
      */
-    public function accessTokenAction() {
+    public function accessTokenAction()
+    {
         $app = $this->getApp();
 
         /* @var AuthorizationServer $server */
