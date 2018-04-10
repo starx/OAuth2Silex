@@ -193,6 +193,8 @@ class AuthorizationController extends AbstractController
 
                         // Save the updated AuthorizationRequest on the session
                         $session->set('auth_request', $authRequest);
+                    } else {
+                        throw new \Exception('User could not be identified');
                     }
                 }
             }
